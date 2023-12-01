@@ -183,4 +183,9 @@ static inline pid_t lxcfs_clone(int (*fn)(void *), void *arg, int flags)
 
 __visible extern void *lxcfs_fuse_init(struct fuse_conn_info *conn, void *data);
 
+// Overrides the runtime path from DEFAULT_RUNTIME_PATH - /var/run
+__visible extern bool set_runtime_path(const char* runtime_path);
+// Needs to be called on library load/reload.
+__visible extern void lxcfslib_init(void);
+
 #endif /* __LXCFS_BINDINGS_H */

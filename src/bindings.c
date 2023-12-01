@@ -761,7 +761,7 @@ static int permute_prepare(void)
 	}
 
 	if (mount(runtime_path, new_runtime, NULL, MS_BIND, 0) < 0) {
-		lxcfs_error("Failed to bind-mount /run into new root: %s.\n", strerror(errno));
+		lxcfs_error("Failed to bind-mount %s into new root: %s.\n", runtime_path, strerror(errno));
 		return -1;
 	}
 
@@ -892,7 +892,7 @@ please_compiler:
 	return;
 }
 
-static void __attribute__((constructor)) lxcfs_init(void)
+void lxcfslib_init(void)
 {
 	__do_close int init_ns = -EBADF, root_fd = -EBADF,
 				  pidfd = -EBADF;
@@ -1003,5 +1003,21 @@ void *lxcfs_fuse_init(struct fuse_conn_info *conn, void *data)
 	can_use_sys_cpu = true;
 #endif
 	has_versioned_opts = true;
-	return fc ? fc->private_data : NULL;
+        return fc ? fc->private_data : NULL;
+}
+
+bool set_runtime_path(const char* new_path)
+{
+        int pathlen;
+
+        if (new_path && strlen(new_path) < PATH_MAX) {
+                pathlen = strlen(new_path);
+                memcpy(runtime_path, new_path, pathlen);
+                runtime_path[pathlen] = '\0';
+                lxcfs_info("Using runtime path %s", runtime_path);
+                return true;
+        } else {
+		lxcfs_error("%s\n", "Failed to overwrite the runtime path");
+                return false;
+        }
 }
