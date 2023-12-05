@@ -217,7 +217,7 @@ static void do_reload(bool reinit)
 	dlopen_handle = dlopen("liblxcfs.so", RTLD_LAZY);
 #endif
 	if (dlopen_handle) {
-		lxcfs_debug("Opened liblxcfs.so");
+		lxcfs_info("Opened liblxcfs.so");
 		goto good;
 	}
 
@@ -234,7 +234,7 @@ static void do_reload(bool reinit)
 	if (!dlopen_handle)
 		log_exit("%s - Failed to open liblxcfs.so at %s", dlerror(), lxcfs_lib_path);
 	else
-		lxcfs_debug("Opened %s", lxcfs_lib_path);
+		lxcfs_info("Opened %s", lxcfs_lib_path);
 
 good:
         if (strlen(runtime_path) > 0 && !do_set_runtime_path(runtime_path)) {

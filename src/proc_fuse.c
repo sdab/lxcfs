@@ -1583,7 +1583,7 @@ static int proc_read_with_personality(int (*do_proc_read)(char *, size_t, off_t,
 			return log_error(0, "Call to personality(%d) failed: %s\n",
 				caller_personality, strerror(errno));
 
-		lxcfs_debug("task (tid: %d) personality was changed %d -> %d\n",
+		lxcfs_info("task (tid: %d) personality was changed %d -> %d\n",
 				(int)syscall(SYS_gettid), ret, caller_personality);
 	}
 
@@ -1595,7 +1595,7 @@ static int proc_read_with_personality(int (*do_proc_read)(char *, size_t, off_t,
 			return log_error(0, "Call to personality(%d) failed: %s\n",
 				host_personality, strerror(errno));
 
-		lxcfs_debug("task (tid: %d) personality was restored %d -> %d\n",
+		lxcfs_info("task (tid: %d) personality was restored %d -> %d\n",
 				(int)syscall(SYS_gettid), ret, host_personality);
 	}
 
@@ -1606,6 +1606,7 @@ __lxcfs_fuse_ops int proc_read(const char *path, char *buf, size_t size,
 			       off_t offset, struct fuse_file_info *fi)
 {
 	struct file_info *f = INTTYPE_TO_PTR(fi->fh);
+        lxcfs_info("proc read from path %s", path);
 
 	switch (f->type) {
 	case LXC_TYPE_PROC_MEMINFO:
@@ -1615,9 +1616,12 @@ __lxcfs_fuse_ops int proc_read(const char *path, char *buf, size_t size,
 		return read_file_fuse_with_offset(LXC_TYPE_PROC_MEMINFO_PATH,
 						  buf, size, offset, f);
 	case LXC_TYPE_PROC_CPUINFO:
-		if (liblxcfs_functional())
+		if (liblxcfs_functional()) {
+                        lxcfs_info("cpuinfo read from lxcfs");
 			return proc_read_with_personality(&proc_cpuinfo_read, buf, size, offset, fi);
+                }
 
+                lxcfs_info("cpuinfo read from real path");
 		return read_file_fuse_with_offset(LXC_TYPE_PROC_CPUINFO_PATH,
 						  buf, size, offset, f);
 	case LXC_TYPE_PROC_UPTIME:
