@@ -961,6 +961,9 @@ int proc_cpuinfo_read(char *buf, size_t size, off_t offset,
 	char *cache = d->buf;
 	size_t cache_size = d->buflen;
 
+        // TODO: remove
+        lxcfs_info("reading proc/cpuinfo");
+
 	if (offset) {
 		size_t left;
 
@@ -982,12 +985,18 @@ int proc_cpuinfo_read(char *buf, size_t size, off_t offset,
 		initpid = fc->pid;
 
 	cg = get_pid_cgroup(initpid, "cpuset");
-	if (!cg)
+	if (!cg) {
+                // TODO: remove
+                lxcfs_info("no cpuset cgroup, returning real cpuinfo");
 		return read_file_fuse("proc/cpuinfo", buf, size, d);
+        }
 	prune_init_slice(cg);
 	cpu_cg = get_pid_cgroup(initpid, "cpu");
-	if (!cpu_cg)
+	if (!cpu_cg) {
+                // TODO: remove
+                lxcfs_info("no cpu cgroup, returning real cpuinfo");                
 		return read_file_fuse("proc/cpuinfo", buf, size, d);
+        }
 	prune_init_slice(cpu_cg);
 	cpuset = get_cpuset(cg);
 	if (!cpuset)
@@ -997,8 +1006,11 @@ int proc_cpuinfo_read(char *buf, size_t size, off_t offset,
 		use_view = true;
 	else
 		use_view = false;
-	if (use_view)
+	if (use_view) {
 		max_cpus = max_cpu_count(cg, cpu_cg);
+                // TODO: remove
+                lxcfs_info("max cpu count: %d", max_cpus);
+        }
 
 	f = fopen_cached("/proc/cpuinfo", "re", &fopen_cache);
 	if (!f)
@@ -1115,6 +1127,9 @@ int proc_cpuinfo_read(char *buf, size_t size, off_t offset,
 
 	/* read from off 0 */
 	memcpy(buf, d->buf, total_len);
+
+        // TODO: remove
+        lxcfs_info("done intercepting proc/cpuinfo");
 
 	return total_len;
 }
